@@ -1,0 +1,27 @@
+- hosts: all
+  become: true
+  tasks:
+
+vars: 
+
+   path_to_rpms: #put path to docker rpms.  Example:  "/home/tr-key/4.1.0.16/offline/docker/"
+
+     - name: Find all rpm files in /tmp folder
+       find:
+          paths: "{{  path_to_rpms: }}"
+          patterns: "*.rpm"
+       register: rpm_files
+
+     - set_fact:
+       rpm_list: "{{ rpm_files.files | map(attribute='path') | list}}"
+
+     - name: copy rpms to remote tmp
+       copy:
+          src: "{{rpm_list}}"
+          dest: /tmp
+
+
+     - name: installing the rpm files
+       yum:
+          name: "{{rpm_list}}"
+          state: present
